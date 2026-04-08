@@ -1,65 +1,109 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 
 export default function Home() {
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<any>(null);
+
+  async function generateMeals() {
+    if (!input.trim()) return;
+
+    setLoading(true);
+    setResult(null);
+
+    try {
+      const res = await fetch("/api/meal-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input })
+      });
+
+      const data = await res.json();
+      setResult(data.result);
+    } catch (err) {
+      console.error(err);
+    }
+
+    setLoading(false);
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="min-h-screen bg-slate-950 text-slate-100 p-6">
+      <div className="max-w-3xl mx-auto space-y-8">
+        <header className="text-center space-y-2">
+          <h1 className="text-3xl font-bold text-emerald-400">Healthy Meal Generator</h1>
+          <p className="text-slate-400 text-sm">
+            Enter ingredients or dietary goals. AI will generate 3 meals with macros and a grocery list.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        </header>
+
+        <div className="space-y-4">
+          <textarea
+            className="w-full h-40 rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            placeholder="Example: chicken, rice, broccoli OR high protein, low carb, 500 calories"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+          />
+
+          <button
+            onClick={generateMeals}
+            disabled={loading}
+            className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 transition disabled:opacity-50"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            {loading ? "Generating..." : "Generate Meal Plan"}
+          </button>
         </div>
-      </main>
-    </div>
+
+        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 min-h-[200px]">
+          {!result && (
+            <p className="text-slate-500 text-sm">
+              Your meal plan will appear here.
+            </p>
+          )}
+
+          {result && (
+            <div className="space-y-6 text-sm">
+              {result.meals.map((meal: any, i: number) => (
+                <section key={i} className="space-y-2">
+                  <h2 className="text-xl font-semibold text-emerald-300">{meal.name}</h2>
+
+                  <div>
+                    <h3 className="font-semibold text-emerald-200">Ingredients</h3>
+                    <ul className="list-disc list-inside text-slate-200">
+                      {meal.ingredients.map((ing: string, idx: number) => (
+                        <li key={idx}>{ing}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold text-emerald-200">Instructions</h3>
+                    <p className="text-slate-200 whitespace-pre-wrap">{meal.instructions}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold text-emerald-200">Macros</h3>
+                    <p className="text-slate-200">
+                      Calories: {meal.macros.calories} • Protein: {meal.macros.protein}g • Carbs: {meal.macros.carbs}g • Fat: {meal.macros.fat}g
+                    </p>
+                  </div>
+                </section>
+              ))}
+
+              <section>
+                <h2 className="text-xl font-semibold text-emerald-300">Grocery List</h2>
+                <ul className="list-disc list-inside text-slate-200">
+                  {result.groceryList.map((item: string, i: number) => (
+                    <li key={i}>{item}</li>
+                  ))}
+                </ul>
+              </section>
+            </div>
+          )}
+        </div>
+      </div>
+    </main>
   );
 }
