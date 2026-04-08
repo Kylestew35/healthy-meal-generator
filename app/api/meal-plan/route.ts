@@ -26,22 +26,46 @@ The user will provide either:
 OR
 - Dietary goals (e.g., "high protein, low carb, 500 calories")
 
+Return exactly 3 meals. No more, no less.
+
 Return ONLY valid JSON with this structure:
 
 {
   "meals": [
-    {
-      "name": string,
-      "ingredients": string[],
-      "instructions": string,
-      "macros": {
-        "calories": number,
-        "protein": number,
-        "carbs": number,
-        "fat": number
-      }
+  {
+    "name": string,
+    "ingredients": string[],
+    "instructions": string,
+    "macros": {
+      "calories": number,
+      "protein": number,
+      "carbs": number,
+      "fat": number
     }
-  ],
+  },
+  {
+    "name": string,
+    "ingredients": string[],
+    "instructions": string,
+    "macros": {
+      "calories": number,
+      "protein": number,
+      "carbs": number,
+      "fat": number
+    }
+  },
+  {
+    "name": string,
+    "ingredients": string[],
+    "instructions": string,
+    "macros": {
+      "calories": number,
+      "protein": number,
+      "carbs": number,
+      "fat": number
+    }
+  }
+],
   "groceryList": string[]
 }
 
